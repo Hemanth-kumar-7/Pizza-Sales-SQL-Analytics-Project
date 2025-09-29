@@ -37,7 +37,7 @@ The dataset includes four key tables:
 # 📊 Business Insights & Recommendations  
 
 ## 🔹 Revenue Drivers  
-- Large pizzas account for nearly **45% of total revenue**, showing customers clearly prefer bigger sizes.  
+- Large pizzas account for nearly 45% of total revenue, showing customers clearly prefer bigger sizes.  
 - Premium categories like **Chicken and Supreme pizzas** bring in the highest revenue, while niche options such as the **Brie Carre Pizza** lag behind.  
 
 ## 🔹 Top & Bottom Sellers  
@@ -45,7 +45,7 @@ The dataset includes four key tables:
 - **Low sellers:** Specialty pizzas with unusual ingredients make up less than **2% of overall sales**.  
 
 ## 🔹 Customer Behavior  
-- The **average order value (AOV)** falls between **₹350 and ₹400**.  
+- The **average order value** falls between **₹350 and ₹400**.  
 - Customers typically buy **two pizzas per order**, suggesting that most purchases are for families or groups.  
 
 ## 🔹 Time-Based Trends  
@@ -66,7 +66,7 @@ The dataset includes four key tables:
 - Phase out or rebrand **underperforming pizzas** to reduce overhead and streamline the menu.  
 
 ## 💵 Pricing Strategy  
-- Since large pizzas dominate sales, test **combo deals** (e.g., *“Buy 1 Large, Get 1 Medium at 50% off”*) to push medium pizza sales.  
+- Since large pizzas dominate sales, test **combo deals** like Buy 1 Large, Get 1 Medium at 50% off to push medium pizza sales.  
 - Launch **family bundles** on weekends to attract group purchases.  
 
 ## ⚙️ Operational Efficiency  
@@ -74,12 +74,12 @@ The dataset includes four key tables:
 - Use sales data to **forecast demand** and fine-tune inventory.  
 
 ## 🎯 Customer Engagement  
-- Offer **loyalty rewards or discounts** for repeat customers, especially during off-peak hours.  
+- Offer **discounts** for repeat customers, especially during off-peak hours.  
 - Run **seasonal promotions** to boost sales in slower months.  
 
 ## 🚀 Future Growth  
 - If available, analyze **delivery vs. dine-in** patterns to refine service models.  
-- Expand best-selling recipes into **new variations** (e.g., BBQ Chicken Supreme).  
+- Expand best-selling recipes into **new variations** like BBQ Chicken Supreme.  
 
 ---
 
@@ -92,19 +92,19 @@ Key takeaways:
 - Weekend evenings are the busiest sales periods, opening opportunities for promotions and smarter inventory planning.  
 
 Through this project, I demonstrated my ability to:  
-- Write and optimize **SQL queries** to solve business problems.  
-- Translate raw data into **clear, actionable insights**.  
-- Provide **data-driven recommendations** that support strategic decisions.  
+- Write and optimize SQL queries to solve business problems.  
+- Translate raw data into clear, actionable insights.  
+- Provide data-driven recommendations that support strategic decisions.  
 
 Overall, this project highlights my potential as an **Aspiring Data Analyst** and showcases my capability to turn data into valuable business intelligence.  
 .  
 
 ## 🚀 How to Run This Project  
-1. Import the dataset into an SQL environment (MySQL/PostgreSQL/SQLite).  
+1. Import the dataset into an SQL environment.  
 2. Run the queries from **pizza_sales_queries.sql**.  
 3. Review results and compare with business expectations.  
 
 ## 📌 Future Improvements  
-- Build interactive dashboards in **Power BI or Tableau**.  
+- Build interactive dashboards in Power BI.  
 - Segment customers for more targeted marketing.  
-- Use **Python + SQL** to forecast future sales.  
+- Use Python + SQL to forecast future sales.  
