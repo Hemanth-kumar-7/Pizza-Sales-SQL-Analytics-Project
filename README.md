@@ -10,7 +10,7 @@ The dataset includes four key tables:
 - **pizzas** → pizza_id, pizza_type_id, size, price  
 - **pizza_types** → pizza_type_id, name, category, ingredients  
 
-## 🎯 Business Questions Answered  
+## 🎯 Business Problems  
 - What is the total revenue?  
 - How much revenue comes from each pizza size?  
 - Which pizza types generate the most revenue?  
