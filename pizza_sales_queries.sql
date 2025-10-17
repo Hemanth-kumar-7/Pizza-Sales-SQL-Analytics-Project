@@ -1,148 +1,324 @@
-create database pizza_sales;
+-- 1. Supplier Table
+CREATE TABLE IF NOT EXISTS supplier (
+    sup_id TINYINT PRIMARY KEY,
+    sup_name VARCHAR(255),
+    address TEXT
+);
 
--- 1. What is the total revenue generated?
+-- 2. Categories Table
+CREATE TABLE IF NOT EXISTS categories (
+    cat_id TINYINT PRIMARY KEY,
+    cat_name VARCHAR(255)
+);
 
-SELECT ROUND(SUM(od.quantity * p.price), 2) AS total_revenue
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id;
+-- 3. Employees Table
+CREATE TABLE IF NOT EXISTS employees (
+    emp_id TINYINT PRIMARY KEY,
+    emp_name VARCHAR(255),
+    hire_date VARCHAR(255)
+);
 
+-- 4. Customers Table
+CREATE TABLE IF NOT EXISTS customers (
+    cust_id SMALLINT PRIMARY KEY,
+    cust_name VARCHAR(255),
+    address TEXT
+);
 
--- 2. Which pizza size contributes the most to revenue?
+-- 5. Products Table
+CREATE TABLE IF NOT EXISTS products (
+    prod_id TINYINT PRIMARY KEY,
+    prod_name VARCHAR(255),
+    sup_id TINYINT,
+    cat_id TINYINT,
+    price DECIMAL(10,2),
+    FOREIGN KEY (sup_id) REFERENCES supplier(sup_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (cat_id) REFERENCES categories(cat_id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+);
 
-SELECT p.size, ROUND(SUM(od.quantity * p.price), 2) AS revenue
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id
-GROUP BY p.size
-ORDER BY revenue DESC;
+-- 6. Orders Table
+CREATE TABLE IF NOT EXISTS orders (
+    ord_id SMALLINT PRIMARY KEY,
+    cust_id SMALLINT,
+    emp_id TINYINT,
+    order_date VARCHAR(255),
+    FOREIGN KEY (cust_id) REFERENCES customers(cust_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (emp_id) REFERENCES employees(emp_id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+);
 
--- 3. Which pizza type generates the highest sales revenue?
+-- 7. Order_Details Table
+CREATE TABLE IF NOT EXISTS order_details (
+    ord_detID SMALLINT AUTO_INCREMENT PRIMARY KEY,
+    ord_id SMALLINT,
+    prod_id TINYINT,
+    quantity TINYINT,
+    each_price DECIMAL(10,2),
+    total_price DECIMAL(10,2),
+    FOREIGN KEY (ord_id) REFERENCES orders(ord_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (prod_id) REFERENCES products(prod_id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+);
 
-SELECT pt.name, ROUND(SUM(od.quantity * p.price), 2) AS revenue
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id
-JOIN pizza_types pt ON p.pizza_type_id = pt.pizza_type_id
-GROUP BY pt.name
-ORDER BY revenue DESC
-LIMIT 10;
+-- Checking data from all tables
+select * from categories;
+select * from customers;
+select * from employees;
+select * from order_details;
+select * from orders;
+select * from products;
+select * from supplier;
 
--- 4. What are the top 5 best-selling pizzas by quantity sold?
+-- Analysis Questions
 
-SELECT pt.name, SUM(od.quantity) AS total_sold
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id
-JOIN pizza_types pt ON p.pizza_type_id = pt.pizza_type_id
-GROUP BY pt.name
-ORDER BY total_sold DESC
-LIMIT 5;
+-- 1️. Customer Insights
+-- 1.1 How many unique customers have placed orders?
 
+select count(distinct cust_id) as unqiue_customers
+from orders
+;
 
--- 5. Which pizzas are least selling?
+-- 1.2 Which top 3 customers have placed the highest number of orders?
 
-SELECT pt.name, SUM(od.quantity) AS total_sold
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id
-JOIN pizza_types pt ON p.pizza_type_id = pt.pizza_type_id
-GROUP BY pt.name
-ORDER BY total_sold ASC
-LIMIT 5;
+select cust_name, count(cust_name) as no_of_orders
+from customers as c
+join orders as o
+	on c.cust_id = o.cust_id
+group by 1 
+order by 2 desc
+limit 3
+;
 
--- 6. What is the average order value?
+-- 1.3 What is the total and average purchase value per customer?
 
-SELECT ROUND(SUM(od.quantity * p.price) / COUNT(DISTINCT o.order_id), 2) AS avg_order_value
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id
-JOIN orders o ON od.order_id = o.order_id;
+select cust_name, sum(total_price) as Total_purchase,
+round(avg(total_price),2) as Avg_purchase
+from customers as c
+join orders as o
+	on c.cust_id = o.cust_id
+join order_details as od
+	on o.ord_id = od.ord_id
+group by 1;
 
+-- 1.4 Who are the top 5 customers by total purchase amount?
 
--- 7. What is the average number of pizzas per order?
+select cust_name, sum(total_price) as Total_purchase
+from customers as c
+join orders as o
+	on c.cust_id = o.cust_id
+join order_details as od
+	on o.ord_id = od.ord_id
+group by 1
+order by 2 desc
+limit 5
+;
 
-SELECT ROUND(SUM(quantity) * 1.0 / COUNT(DISTINCT order_id), 2) AS avg_pizzas_per_order
-FROM orders_details ;
+-- 2. Product Performance
+-- 2.1 How many products exist in each category?
 
+select cat_name, count(p.cat_id) as products_count
+from categories as c
+join products as p
+	on c.cat_id = p.cat_id
+group by p.cat_id
+;
 
--- 8. Which day of the week has the highest number of orders?
+-- 2.2 What is the average price of products by category?
 
-SELECT DAYNAME(order_date) AS day_of_week,
-COUNT(DISTINCT order_id) AS total_orders
-FROM orders
-GROUP BY day_of_week
-ORDER BY total_orders DESC;
-
-
--- 9. What is the peak hour of the day when most orders are placed?
-
-SELECT HOUR(order_date) AS order_hour, COUNT(order_id) AS total_orders
-FROM orders 
-GROUP BY order_hour
-ORDER BY total_orders DESC;
-
-
--- 10. How many unique customers/orders were placed each month?
-
-SELECT DATE_FORMAT(order_date, '%Y-%m') AS month,
-COUNT(DISTINCT order_id) AS total_orders
-FROM orders 
-GROUP BY month
-ORDER BY month;
-
-
--- 11. How has the monthly revenue trend changed over time?
-
-SELECT DATE_FORMAT(o.order_date, '%Y-%m') AS month, 
-ROUND(SUM(od.quantity * p.price), 2) AS revenue
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id
-JOIN orders o ON od.order_id = o.order_id
-GROUP BY month
-ORDER BY month;
-
-
--- 12. Which pizza category is most popular?
-
-SELECT pt.category, SUM(od.quantity) AS total_sold
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id
-JOIN pizza_types pt ON p.pizza_type_id = pt.pizza_type_id
-GROUP BY pt.category
-ORDER BY total_sold DESC;
-
-
--- 13. Which pizza category contributes the most to total revenue?
-
-SELECT pt.category, ROUND(SUM(od.quantity * p.price), 2) AS revenue
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id
-JOIN pizza_types pt ON p.pizza_type_id = pt.pizza_type_id
-GROUP BY pt.category
-ORDER BY revenue DESC;
-
-
--- 14. What is the growth rate of sales month-over-month?
-
-WITH monthly_sales AS (
-    SELECT DATE_FORMAT(o.order_date, '%Y-%m') AS month, 
-    SUM(od.quantity * p.price) AS revenue
-    FROM orders_details od
-    JOIN pizzas p ON od.pizza_id = p.pizza_id
-    JOIN orders o ON od.order_id = o.order_id
-    GROUP BY month
-)
-SELECT month,
-       revenue,
-       ROUND((revenue - LAG(revenue) OVER (ORDER BY month)) / LAG(revenue) 
-       OVER (ORDER BY month) * 100, 2) AS growth_rate
-FROM monthly_sales;
+select cat_name, round(avg(price),2) as products_avg_price
+from categories as c
+join products as p
+	on c.cat_id = p.cat_id
+group by p.cat_id;
 
 
--- 15. Identify the top 5 pizzas that show consistent demand.
+-- 2.3 Which products have the highest total sales volume (by quantity)?
 
-SELECT pt.name, COUNT(DISTINCT DATE_FORMAT(o.order_date, '%Y-%m')) AS active_months,
-SUM(od.quantity) AS total_sold
-FROM orders_details od
-JOIN pizzas p ON od.pizza_id = p.pizza_id
-JOIN pizza_types pt ON p.pizza_type_id = pt.pizza_type_id
-JOIN orders o ON od.order_id = o.order_id
-GROUP BY pt.name
-HAVING active_months = (SELECT COUNT(DISTINCT DATE_FORMAT(order_date, '%Y-%m')) FROM orders)
-ORDER BY total_sold DESC
-LIMIT 5;
+select prod_name, sum(quantity) as total_sales
+from products as p
+join order_details as od
+	on p.prod_id = od.prod_id
+group by od.prod_id
+order by 2 desc;
+
+-- 2.4 What is the total revenue generated by each product?
+
+select prod_name, 
+sum(total_price) as total_revenue
+from products as p
+join order_details as od
+	on p.prod_id = od.prod_id
+group by od.prod_id;
+
+-- 2.5 How do product sales vary by category and supplier?
+
+select c.cat_name,s.sup_name,
+    sum(od.total_price) as total_sales,
+    sum(od.quantity) as total_quantity
+from order_details as od
+join products as p
+    on od.prod_id = p.prod_id
+join categories as c
+    on p.cat_id = c.cat_id
+join supplier as s
+    on p.sup_id = s.sup_id
+group by c.cat_name, s.sup_name
+order by total_sales desc;
+
+-- 3. Sales and Order Trends
+-- 3.1 How many orders have been placed in total?
+
+select count(*) as total_orders
+from orders ;
+
+-- 3.2 What is the average value per order?
+
+select round(avg(total_amount),2) as avg_order_value
+from (
+		select ord_id, sum(total_price) as total_amount
+        from order_details
+        group by 1) as total_orders
+;
+
+-- 3.3 On which dates were the most orders placed?
+
+select order_date,count(ord_id) as total_orders
+from orders
+group by 1
+order by 2 desc;
+
+-- 3.4  are the monthly trends in order volume and revenue?
+
+update orders
+set order_date = STR_TO_DATE(order_date, '%m/%d/%Y');
+
+select date_format(o.order_date, '%Y-%m') as month,
+    count(distinct o.ord_id) as total_orders,
+    sum(od.total_price) as total_revenue
+from orders as o
+join order_details as od
+    on o.ord_id = od.ord_id
+group by date_format(o.order_date, '%Y-%m')
+order by month;
+
+-- 3.5 How do order patterns vary across weekdays and weekends?
+
+select 
+    case 
+        when dayofweek(order_date) in (1,7) then 'weekends'
+        else 'weekdays'
+    end as day_type,
+    count(distinct o.ord_id) as total_orders,
+    sum(total_price) as total_revenue
+from orders as o
+join order_details as od
+	on o.ord_id = od.ord_id
+group by day_type;
+
+-- 4️. Supplier Contribution
+-- 4.1 How many suppliers are there in the database?
+
+select count(*) as total_suppliers
+from supplier;
+
+-- 4.2 Which supplier provides the most products?
+
+select s.sup_name, count(p.prod_id) as product_count
+from supplier as s
+join products p 
+	on s.sup_id = p.sup_id
+group by 1
+order by 2 desc
+limit 1;
+
+-- 4.3 What is the average price of products from each supplier?
+
+select s.sup_name, avg(p.price) as avg_price
+from supplier s
+join products p 
+	on s.sup_id = p.sup_id
+group by 1;
+
+
+-- 4.4 Which suppliers contribute the most to total product sales (by revenue)?
+
+select s.sup_name, sum(total_price) as total_revenue
+from supplier s
+join products p 
+	on s.sup_id = p.sup_id
+join order_details od 
+	on p.prod_id = od.prod_id
+group by 1
+order by 2 desc;
+
+-- 5️. Employee Performance
+-- 5.1 How many employees have processed orders?
+
+select count(distinct emp_id) as employees
+from orders;
+
+-- 5.2 Which employees have handled the most orders?
+
+select e.emp_name, count(o.ord_id) as orders_handled
+from employees e
+join orders o 
+	on e.emp_id = o.emp_id
+group by e.emp_name
+order by 2 desc
+limit 1;
+
+-- 5.3 What is the total sales value processed by each employee?
+
+select e.emp_name, sum(total_price) as total_sales
+from employees e
+join orders o 
+	on e.emp_id = o.emp_id
+join order_details od 
+	on o.ord_id = od.ord_id
+group by e.emp_name
+order by 2 desc;
+
+
+-- 5.4 What is the average order value handled per employee?
+
+select e.emp_name, avg(order_value) as avg_order_value
+from (
+    select o.emp_id, o.ord_id, sum(total_price) as order_value
+    from orders o
+    join order_details od 
+		on o.ord_id = od.ord_id
+    group by o.emp_id, o.ord_id
+) as order_totals
+join employees e 
+	on order_totals.emp_id = e.emp_id
+group by e.emp_name;
+
+-- 6️. Order Details Deep Dive
+-- 6.1 What is the relationship between quantity ordered and total price?
+
+select quantity, (total_price) as total_price
+from order_details;
+
+-- 6.2 What is the average quantity ordered per product?
+
+select p.prod_name, avg(od.quantity) as avg_quantity
+from products p
+join order_details od 
+	on p.prod_id = od.prod_id
+group by 1;
+
+-- 6.3 How does the unit price vary across products and orders?
+
+select p.prod_name, od.each_price, 
+count(*) as order_count
+from products p
+join order_details od 
+	on p.prod_id = od.prod_id
+group by 1,2
+order by 1,2;
+
+
